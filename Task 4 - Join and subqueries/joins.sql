@@ -42,7 +42,7 @@ SELECT DISTINCT p.firstname, p.lastname, e.jobtitle
 который выведет количество записей из запроса 1.4 */
 
 SELECT COUNT(*) 
-        FROM 
+  FROM 
 (SELECT DISTINCT p.firstname, p.lastname, e.jobtitle
             FROM person.person p 
       CROSS JOIN humanresources.employee e) c
