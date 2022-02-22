@@ -13,9 +13,9 @@ WITH orders AS (
      GROUP BY od.productid
 	), 
 	ranked_items AS (
-	SELECT p.name product, o.sumtotal, PERCENT_RANK() OVER(ORDER BY o.sumtotal) perrank
-	  FROM production.product p
-	  JOIN orders o
+    SELECT p.name product, o.sumtotal, PERCENT_RANK() OVER(ORDER BY o.sumtotal) perrank
+      FROM production.product p
+      JOIN orders o
         ON o.productid = p.productid
 	)
 SELECT product, sumtotal
@@ -50,38 +50,28 @@ SELECT DISTINCT(listprice)
 	Production.ProductCategory */
 
 WITH categories AS(
-		SELECT c.productcategoryid category, c.name, sc.productsubcategoryid 
-		  FROM production.productcategory c
-		  JOIN production.productsubcategory sc
-			ON c.productcategoryid = sc.productcategoryid
+        SELECT c.productcategoryid category, c.name, sc.productsubcategoryid 
+          FROM production.productcategory c
+          JOIN production.productsubcategory sc
+            ON c.productcategoryid = sc.productcategoryid
 	), 
 	sales AS(
-		SELECT od.productid, od.linetotal, o.orderdate
-		  FROM sales.salesorderdetail od
-		  JOIN sales.salesorderheader o
-			ON od.salesorderid = o.salesorderid
+	SELECT od.productid, od.linetotal, o.orderdate
+	  FROM sales.salesorderdetail od
+          JOIN sales.salesorderheader o
+            ON od.salesorderid = o.salesorderid
 	), 
 	categories_sales AS (
-<<<<<<< HEAD
-		SELECT c.name, SUM(s.linetotal) sales, EXTRACT(YEAR from s.orderdate) order_year
-	      FROM categories c
-	      JOIN production.product p
-=======
         SELECT c.name, SUM(s.linetotal) sales, EXTRACT(YEAR from s.orderdate) order_year
           FROM categories c
           JOIN production.product p
->>>>>>> fcca742 (Task 7. Analytic functions)
-		    ON c.productsubcategoryid = p.productsubcategoryid
-	      JOIN sales s
-		    ON s.productid = p.productid
-	  GROUP BY c.name, order_year
+            ON c.productsubcategoryid = p.productsubcategoryid
+          JOIN sales s
+            ON s.productid = p.productid
+	 GROUP BY c.name, order_year
 	),
 	sales_yoy AS (
-<<<<<<< HEAD
-		SELECT name category, sales, order_year,(sales - LAG(sales) OVER(
-=======
         SELECT name category, sales, order_year,(sales - LAG(sales) OVER(
->>>>>>> fcca742 (Task 7. Analytic functions)
 			PARTITION BY name ORDER BY order_year)) / sales yoy
           FROM categories_sales
 	)
@@ -96,17 +86,10 @@ SELECT category, sales, yoy
 WITH sales AS(
     SELECT o.orderdate, MAX(od.linetotal) total
       FROM sales.salesorderheader o
-<<<<<<< HEAD
-	  JOIN sales.salesorderdetail od
-	    ON o.salesorderid = od.salesorderid
-	 WHERE to_char(o.orderdate, 'yyyy-mm')= '2013-01'
-	GROUP BY o.orderdate
-=======
       JOIN sales.salesorderdetail od
         ON o.salesorderid = od.salesorderid
      WHERE to_char(o.orderdate, 'yyyy-mm')= '2013-01'
      GROUP BY o.orderdate
->>>>>>> fcca742 (Task 7. Analytic functions)
 	)
 SELECT orderdate, MAX(total) OVER(PARTITION BY orderdate) maxorder
   FROM sales;
@@ -137,8 +120,4 @@ WITH sold_products AS (
 SELECT name, mostfreq 
   FROM sold_product_subcategories
  WHERE rnk = 1
-<<<<<<< HEAD
-ORDER BY mostfreq;
-=======
  ORDER BY mostfreq;
->>>>>>> fcca742 (Task 7. Analytic functions)
