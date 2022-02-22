@@ -9,36 +9,36 @@ WITH orders AS (
 	  FROM sales.salesorderheader o
       JOIN sales.salesorderdetail od
         ON o.salesorderid = od.salesorderid
-     WHERE to_char(o.orderdate, 'yyyy-mm')= '2013-01'
+     WHERE to_char(o.orderdate, 'yyyy-mm') = '2013-01'
      GROUP BY od.productid
 	), 
 	ranked_items AS (
-	SELECT p.name, o.sumtotal, PERCENT_RANK() OVER(ORDER BY o.sumtotal) perrank
+	SELECT p.name product, o.sumtotal, PERCENT_RANK() OVER(ORDER BY o.sumtotal) perrank
 	  FROM production.product p
 	  JOIN orders o
 		ON o.productid = p.productid
 	)
-SELECT name, sumtotal, perrank
+SELECT product, sumtotal
   FROM ranked_items
- WHERE perrank > 0.1 AND perrank < 0.9
+ WHERE perrank > 0.1 AND perrank < 0.9;
  
 /* 2. Найти самые дешевые продукты в каждой субкатегории продуктов.
 Использовать таблицу Production.Product. */
 
 SELECT name, MIN(listprice) OVER(PARTITION BY productsubcategoryid) listprice
-  FROM production.product
+  FROM production.product;
 
 /* 3. Найти вторую по величине цену для горных велосипедов, 
 используя таблицу Production.Product */
 
 WITH mountain_bikes AS (
-	SELECT DENSE_RANK() OVER(ORDER BY listprice DESC) rank, listprice 
+	SELECT DENSE_RANK() OVER(ORDER BY listprice DESC) rnk, listprice 
 	  FROM production.product
-	 WHERE name LIKE 'Mountain-%'
+	 WHERE productsubcategoryid = 1
 )
 SELECT DISTINCT(listprice) 
   FROM mountain_bikes
- WHERE rank = 2
+ WHERE rnk = 2;
 
 /* 4. Посчитать продажи за 2013 год в разрезе категорий(“YoY метрика”):  
 (продажи - продажи за прошлый год) продажи
@@ -62,7 +62,7 @@ WITH categories AS(
 			ON od.salesorderid = o.salesorderid
 	), 
 	categories_sales AS (
-		SELECT c.name, SUM(s.linetotal) sumtotal, EXTRACT(YEAR from s.orderdate) order_year
+		SELECT c.name, SUM(s.linetotal) sales, EXTRACT(YEAR from s.orderdate) order_year
 	      FROM categories c
 	      JOIN production.product p
 		    ON c.productsubcategoryid = p.productsubcategoryid
@@ -71,28 +71,28 @@ WITH categories AS(
 	  GROUP BY c.name, order_year
 	),
 	sales_yoy AS (
-		SELECT name, sumtotal, order_year,(sumtotal - LAG(sumtotal) OVER(
-			PARTITION BY name ORDER BY order_year)) / sumtotal yoy
+		SELECT name category, sales, order_year,(sales - LAG(sales) OVER(
+			PARTITION BY name ORDER BY order_year)) / sales yoy
           FROM categories_sales
 	)
-SELECT name, sumtotal, yoy
+SELECT category, sales, yoy
   FROM sales_yoy
- WHERE order_year = '2013'
+ WHERE order_year = '2013';
 
 /* 5. Найти сумму максимальную заказа за каждый день января 2013, используя таблицы:
 	Sales.SalesOrderHeader
 	Sales.SalesOrderDetail */
 
 WITH sales AS(
-	SELECT o.orderdate, MAX(od.linetotal) total
-	FROM sales.salesorderheader o
-	JOIN sales.salesorderdetail od
-	ON o.salesorderid = od.salesorderid
-	WHERE to_char(o.orderdate, 'yyyy-mm')= '2013-01'
+    SELECT o.orderdate, MAX(od.linetotal) total
+      FROM sales.salesorderheader o
+	  JOIN sales.salesorderdetail od
+	    ON o.salesorderid = od.salesorderid
+	 WHERE to_char(o.orderdate, 'yyyy-mm')= '2013-01'
 	GROUP BY o.orderdate
 	)
 SELECT orderdate, MAX(total) OVER(PARTITION BY orderdate) maxorder
-FROM sales
+  FROM sales;
 
 /* 6. Найти товар, который чаще всего продавался в каждой из субкатегорий в январе 2013, используя таблицы:
 Sales.SalesOrderHeader
@@ -120,4 +120,4 @@ WITH sold_products AS (
 SELECT name, mostfreq 
   FROM sold_product_subcategories
  WHERE rnk = 1
-ORDER BY mostfreq 
+ORDER BY mostfreq;
