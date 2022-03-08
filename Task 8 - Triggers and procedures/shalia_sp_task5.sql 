@@ -1,0 +1,92 @@
+/* Задание 5 (30 балов)
+Пример: Покупатель связался с менеджером чтобы оформить заказ.
+Задача: Создать функцию триггера и триггер для оформления заказа и добавления его в таблицы <your_lastname>.salesorderheader и <your_lastname>.salesorderdetail (триггер для этой таблицы с действиями(update,delete,insert)).
+Менеджер добавляет товар в таблицу <your_lastname>.salesorderdetail после добавления каждого нового товара или удалении из таблицы из этой таблицы, общая информация должна вставляться, удаляться или обновляться (обновляется только столбец totaldue = sum(totaline from <your_lastname>.salesorderdetail)) в таблице <your_lastname>.salesorderheader.
+Если значение столбца totaline изменилось или строка была удалена нужно  добавить или отнять это значение в totaldue. При удаления всех данных для одного заказа <your_lastname>.salesorderdetail. нужно удалить все данные в таблице <your_lastname>.salesorderheader для этого заказа.
+Выполнить: (В вашей собственной схеме нужно создать новые таблицы.)
+drop table if exists <your_lastname>.salesorderheader;
+create table <your_lastname>.salesorderheader (like sales.salesorderheader including all);
+ 
+insert into <your_lastname>.salesorderheader
+select * 
+from sales.salesorderheader;
+ 
+drop table if exists <your_lastname>.salesorderdetail;
+create table <your_lastname>.salesorderdetail (like sales.salesorderdetail including all);
+ 
+insert into <your_lastname>.salesorderdetail
+select * 
+from sales.salesorderdetail;
+ 
+alter table <your_lastname>.salesorderdetail
+add column customerid int, 
+add column salespersonid int,
+add column creditcardid int;
+ 
+alter table <your_lastname>.salesorderheader
+drop column revisionnumber,
+drop column duedate,
+drop column shipdate,
+drop column salesordernumber,
+drop column purchaseordernumber,
+drop column accountnumber,
+drop column territoryid,
+drop column billtoaddressid,
+drop column shipmethodid,
+drop column creditcardapprovalcode,
+drop column currencyrateid,
+drop column subtotal,
+drop column taxamt,
+drop column freight,
+drop column comment,
+drop column rowguid,
+drop column modifieddate,
+drop column shiptoaddressid;
+
+Условие:
+Создать скрипт:  <your_lastname>_sp_task5.sql
+Имя процедуры - <your_lastname>.<procedure_name>_task5
+Имя триггера - <your_lastname>_<trigger_name>_task5
+*/
+
+--created tables
+SELECT * FROM shalia.salesorderdetail LIMIT 100
+SELECT * FROM shalia.salesorderheader LIMIT 100
+
+
+CREATE OR REPLACE FUNCTION shalia.update_sales_task5()
+RETURNS trigger
+LANGUAGE PLPGSQL
+AS $$
+DECLARE
+tabname text := quote_ident(TG_TABLE_SCHEMA) || '.'
+                || quote_ident(TG_TABLE_NAME);
+BEGIN  
+IF TG_OP = 'DELETE' THEN
+	IF OLD.salesorderid NOT IN (
+		SELECT salesorderid from shalia.salesorderdetail)
+    THEN
+        RAISE NOTICE '%', tabname;
+        --DELETE FROM shalia.salesorderheader 
+        --WHERE salesorderid = OLD.salesorderid;
+    END IF;
+ELSEIF TG_OP = 'UPDATE' THEN
+	UPDATE shalia.salesorderheader
+	SET totaldue = totaldue - OLD.linetotal + NEW.linetotal
+	WHERE salesorderid = NEW.salesorderid;
+ELSEIF TG_OP = 'INSERT' THEN
+--add check for exception for customerid if it is null
+    INSERT INTO shalia.salesorderheader(salesorderid, totaldue)
+    VALUES (NEW.salesorderid, NEW.linetotal)
+    ON CONFLICT(salesorderid)
+    DO UPDATE SET totaldue = NEW.linetotal + (
+        SELECT totaldue FROM shalia.salesorderheader
+         WHERE salesorderid = NEW.salesorderid);
+END IF;
+RETURN NULL;  
+END$$;
+
+CREATE TRIGGER update_sales_trigger_task5
+AFTER UPDATE ON shalia.salesorderdetail
+FOR EACH ROW
+EXECUTE FUNCTION shalia.update_sales_task5();
