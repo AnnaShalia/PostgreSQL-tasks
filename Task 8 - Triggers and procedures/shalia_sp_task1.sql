@@ -11,11 +11,11 @@
 Пример вывода: “<firstname> <lastname> - <age>”*/
 
 CREATE OR REPLACE FUNCTION shalia.get_emp_details_task1(email varchar(50))
-RETURNS record 
+RETURNS varchar 
 LANGUAGE PLPGSQL
 AS $$
 DECLARE 
-    res record;
+    res varchar;
 BEGIN
     SELECT pp.firstname || ' ' || pp.lastname || ' - ' || 
       DATE_PART('year', AGE(CURRENT_DATE, e.birthdate)) || ' years old.' INTO res
@@ -27,6 +27,7 @@ BEGIN
      WHERE pe.emailaddress = email;
 RETURN res;
 END;$$ 
+
 
 --test function
 SELECT shalia.get_emp_details_task1('gail0@adventure-works.com')
