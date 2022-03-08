@@ -44,7 +44,7 @@ ELSE
 END IF;
 END$$;
 
---test function 
+--test procedure 
 CALL shalia.update_makeflag_task2('Bearing Ball', true)
 CALL shalia.update_makeflag_task2('Bearing11 Ball', false)
 CALL shalia.update_makeflag_task2('Bearing Ball', true)
