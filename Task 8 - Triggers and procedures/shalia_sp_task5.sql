@@ -65,17 +65,17 @@ AS $$
 BEGIN  
 IF TG_OP = 'DELETE' THEN
     IF EXISTS (
-       SELECT * 
-         FROM shalia.salesorderdetail 
-        WHERE salesorderid = OLD.salesorderid)
+        SELECT * 
+          FROM shalia.salesorderdetail 
+         WHERE salesorderid = OLD.salesorderid)
     THEN 
-       UPDATE shalia.salesorderheader
-          SET totaldue = totaldue - OLD.linetotal
-        WHERE salesorderid = OLD.salesorderid;
+        UPDATE shalia.salesorderheader
+           SET totaldue = totaldue - OLD.linetotal
+         WHERE salesorderid = OLD.salesorderid;
     ELSE 
-       DELETE
-         FROM shalia.salesorderheader 
-        WHERE salesorderid = OLD.salesorderid;
+        DELETE
+          FROM shalia.salesorderheader 
+         WHERE salesorderid = OLD.salesorderid;
     END IF;
 ELSEIF TG_OP = 'UPDATE' THEN
     UPDATE shalia.salesorderheader
@@ -162,4 +162,3 @@ SELECT *
 DELETE 
   FROM shalia.salesorderdetail
  WHERE salesorderid = 47051;
- 
