@@ -82,21 +82,21 @@ ELSEIF TG_OP = 'UPDATE' THEN
        SET totaldue = totaldue - OLD.linetotal + NEW.linetotal
      WHERE salesorderid = OLD.salesorderid;
 ELSEIF TG_OP = 'INSERT' THEN
-    INSERT INTO shalia.salesorderheader(salesorderid, orderdate, customerid, salespersonid, creditcardid, totaldue)
-    VALUES (NEW.salesorderid, NEW.modifieddate, NEW.customerid, NEW.salespersonid, NEW.creditcardid, NEW.linetotal)
-        ON CONFLICT(salesorderid)
- DO UPDATE 
-       SET totaldue = NEW.linetotal + (
-    SELECT totaldue 
-      FROM shalia.salesorderheader
-     WHERE salesorderid = NEW.salesorderid);
+--handling issue with customerid = null
+    IF NEW.customerid IS NULL THEN
+        RAISE NOTICE 'Please note that salesorderheader table won''t be updated as customer id cannot be null in this table.';
+  ELSE
+        INSERT INTO shalia.salesorderheader(salesorderid, orderdate, customerid, salespersonid, creditcardid, totaldue)
+        VALUES (NEW.salesorderid, NEW.modifieddate, NEW.customerid, NEW.salespersonid, NEW.creditcardid, NEW.linetotal)
+            ON CONFLICT(salesorderid)
+     DO UPDATE 
+           SET totaldue = NEW.linetotal + (
+        SELECT totaldue 
+          FROM shalia.salesorderheader
+         WHERE salesorderid = NEW.salesorderid);
+    END IF;
 END IF;
 RETURN NULL;
-EXCEPTION 
-    WHEN OTHERS THEN
-        RAISE INFO 'There was an issue with updating salesorderheader table due to the following error: %.',SQLERRM;
-        RAISE INFO 'Error State: %', SQLSTATE;
-    RETURN NULL;
 END$$;
 
 --trigger
