@@ -85,7 +85,7 @@ ELSEIF TG_OP = 'INSERT' THEN
 --handling issue with customerid = null
     IF NEW.customerid IS NULL THEN
         RAISE NOTICE 'Please note that salesorderheader table won''t be updated as customer id cannot be null in this table.';
-  ELSE
+    ELSE
         INSERT INTO shalia.salesorderheader(salesorderid, orderdate, customerid, salespersonid, creditcardid, totaldue)
         VALUES (NEW.salesorderid, NEW.modifieddate, NEW.customerid, NEW.salespersonid, NEW.creditcardid, NEW.linetotal)
             ON CONFLICT(salesorderid)
