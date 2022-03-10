@@ -118,7 +118,7 @@ UPDATE shalia.salesorderdetail
    SET linetotal = 115
  WHERE salesorderid = 43670 AND salesorderdetailid = 111;
 
---testing of inserting the new item to them salesorderdetail
+--testing of inserting the new item to the salesorderdetail
 --if the order doesn't exist in salesorderheader table:
 INSERT INTO shalia.salesorderdetail
 VALUES(25514588, 1123, 'test', 3, 12, 1, 6, 0, 23, 'b308c96d-d9e6-403b-8470-2cc176c41283' , 
