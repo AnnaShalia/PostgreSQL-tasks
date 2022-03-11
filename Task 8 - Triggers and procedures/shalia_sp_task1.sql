@@ -19,7 +19,7 @@ DECLARE
     res varchar;
 BEGIN
     SELECT pp.firstname || ' ' || pp.lastname || ' - ' || 
-      DATE_PART('year', AGE(CURRENT_DATE, e.birthdate)) || ' years old.' INTO res
+      DATE_PART('year', AGE(e.birthdate)) || ' years old.' INTO res
       FROM person.person pp
       JOIN person.emailaddress pe
         ON pp.businessentityid = pe.businessentityid
