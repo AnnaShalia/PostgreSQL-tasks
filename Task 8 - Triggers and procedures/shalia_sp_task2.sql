@@ -47,4 +47,7 @@ END$$;
 --test procedure 
 CALL shalia.update_makeflag_task2('Bearing Ball', true)
 CALL shalia.update_makeflag_task2('Bearing11 Ball', false)
-CALL shalia.update_makeflag_task2('Bearing Ball', true)
+
+SELECT * 
+  FROM shalia.product 
+ WHERE name = 'Bearing Ball'
