@@ -28,14 +28,14 @@ IF product_name NOT IN (
     SELECT name 
       FROM shalia.product)
 THEN 
-    RAISE NOTICE 'The product name "%" wasn''t found in the shalia.product table.',
+    RAISE NOTICE 'The product name ''%'' wasn''t found in the shalia.product table.',
            product_name; 
 ELSEIF new_flag = (
     SELECT makeflag 
       FROM shalia.product 
      WHERE name = product_name)
 THEN 
-    RAISE NOTICE 'The makeflag for "%" product is already set to %.',
+    RAISE NOTICE 'The makeflag for ''%'' product is already set to %.',
            product_name, new_flag;
 ELSE
     UPDATE shalia.product 
