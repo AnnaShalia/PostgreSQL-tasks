@@ -11,7 +11,7 @@
 Пример вывода: “<firstname> <lastname> - <age>”*/
 
 
-CREATE OR REPLACE FUNCTION shalia.get_emp_details_task1(email varchar(50))
+CREATE OR REPLACE FUNCTION shalia.get_emp_details_task1(email varchar(100))
 RETURNS varchar 
 LANGUAGE PLPGSQL
 AS $$
